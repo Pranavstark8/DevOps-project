@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microservices Application</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Welcome to the Microservices Application</h1>
+
+    <div id="login">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p id="loginStatus"></p>
+    </div>
+
+    <div id="content" style="display: none;">
+        <h2>Available Services</h2>
+        <div id="services"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
