@@ -3,6 +3,7 @@ pipeline {
      environment {
         API_SERVICE_URL = 'http://localhost:5002'
         AUTH_SERVICE_URL = 'http://localhost:5001'
+        NODE_VERSION='14'
     }
     stages {
         stage('Install NVM and Node.js') {
