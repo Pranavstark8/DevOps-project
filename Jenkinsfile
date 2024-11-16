@@ -4,37 +4,23 @@ pipeline {
     stages {
         stage('Verify Tools') {
             steps {
-                script {
-                    sh '''
-                    # Check and install jq if not available
-                    if ! command -v jq &> /dev/null
-                    then
-                        echo "jq not found. Installing locally..."
-                        curl -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
-                        chmod +x jq
-                        echo "jq installed successfully."
-                    fi
-
-                    # Verify tools
-                    echo "Verifying tools..."
-                    docker version
-                    docker info
-                    docker compose --version
-                    curl --version
-                    ./jq --version
-                    '''
-                }
+                sh '''
+                echo "Verifying required tools..."
+                docker version
+                docker info
+                docker compose version  docker-compose --version
+                curl --version
+                jq --version  { echo "jq not found! Please install it."; exit 1; }
+                '''
             }
         }
 
         stage('Prune Docker Data') {
             steps {
-                script {
-                    sh '''
-                    echo "Pruning unused Docker resources..."
-                    docker system prune -a --volumes -f
-                    '''
-                }
+                sh '''
+                echo "Pruning unused Docker resources..."
+                docker system prune -a --volumes -f
+                '''
             }
         }
 
@@ -43,8 +29,16 @@ pipeline {
                 script {
                     sh '''
                     echo "Starting containers..."
-                    docker compose up -d --no-color --wait
-                    docker compose ps
+
+                    # Check if modern Docker Compose is available
+                    if command -v docker compose &> /dev/null; then
+                        docker compose up --no-color --wait --detach
+                        docker compose ps
+                    else
+                        # Fallback to legacy docker-compose
+                        docker-compose up -d --no-color
+                        docker-compose ps
+                    fi
                     '''
                 }
             }
@@ -55,7 +49,7 @@ pipeline {
                 script {
                     sh '''
                     echo "Running tests..."
-                    curl http://localhost:3000 | ./jq
+                    curl http://localhost:3000 | jq || { echo "Error: Test failed."; exit 1; }
                     '''
                 }
             }
@@ -65,10 +59,17 @@ pipeline {
     post {
         always {
             echo 'Cleaning up resources after build'
-            sh '''
-            echo "Stopping and removing containers..."
-            docker compose down
-            '''
+            script {
+                sh '''
+                echo "Stopping and removing containers..."
+                
+                if command -v docker compose &> /dev/null; then
+                    docker compose down
+                else
+                    docker-compose down
+                fi
+                '''
+            }
         }
         success {
             echo 'Pipeline executed successfully!'
