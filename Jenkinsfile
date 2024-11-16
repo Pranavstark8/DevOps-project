@@ -18,6 +18,25 @@ pipeline {
                 '''
             }
         }
+
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing project dependencies...'
+                sh '''
+                    export NVM_DIR="$HOME/.nvm"
+                    . "$NVM_DIR/nvm.sh"
+                    nvm use $NODE_VERSION
+                    cd auth
+                    npm install
+                    npm install jest --save-dev
+                    cd ..
+                    cd api
+                    npm install
+                    npm install jest --save-dev
+                '''
+            }
+        }
+        
         stage('Verify Tools') {
             steps {
                 script {
@@ -69,6 +88,7 @@ pipeline {
                 script {
                     sh '''
                         echo "Running tests..."
+
                         npm install # Install dependencies
                         cd auth
                         npm test
