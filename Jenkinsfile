@@ -12,6 +12,7 @@ pipeline {
                         echo "jq not found. Installing locally..."
                         curl -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
                         chmod +x jq
+                        mv jq /usr/local/bin
                         echo "jq installed successfully."
                     fi
 
@@ -19,9 +20,9 @@ pipeline {
                     echo "Verifying tools..."
                     docker version
                     docker info
-                    docker compose --version
+                    docker compose version  docker-compose --version
                     curl --version
-                    ./jq --version
+                    jq --version
                     '''
                 }
             }
@@ -43,8 +44,16 @@ pipeline {
                 script {
                     sh '''
                     echo "Starting containers..."
-                    docker compose up -d --no-color --wait
-                    docker compose ps
+                    
+                    # Check if 'docker compose' is available
+                    if command -v docker compose &> /dev/null; then
+                        docker compose up --detach --no-color
+                        docker compose ps
+                    else
+                        # Use legacy docker-compose if available
+                        docker-compose up -d --no-color
+                        docker-compose ps
+                    fi
                     '''
                 }
             }
@@ -55,6 +64,7 @@ pipeline {
                 script {
                     sh '''
                     echo "Running tests..."
+                    curl http://localhost:3000 | jq  { echo "Tests failed!"; exit 1; }
                     '''
                 }
             }
@@ -64,10 +74,17 @@ pipeline {
     post {
         always {
             echo 'Cleaning up resources after build'
-            sh '''
-            echo "Stopping and removing containers..."
-            docker compose down
-            '''
+            script {
+                sh '''
+                echo "Stopping and removing containers..."
+                
+                if command -v docker compose &> /dev/null; then
+                    docker compose down
+                else
+                    docker-compose down
+                fi
+                '''
+            }
         }
         success {
             echo 'Pipeline executed successfully!'
