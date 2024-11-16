@@ -5,6 +5,18 @@ pipeline {
         AUTH_SERVICE_URL = 'http://localhost:5001'
     }
     stages {
+        stage('Install NVM and Node.js') {
+            steps {
+                echo 'Installing NVM and setting up Node.js...'
+                sh '''
+                    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+                    export NVM_DIR="$HOME/.nvm"
+                    . "$NVM_DIR/nvm.sh"
+                    nvm install $NODE_VERSION
+                    nvm alias default $NODE_VERSION
+                '''
+            }
+        }
         stage('Verify Tools') {
             steps {
                 script {
