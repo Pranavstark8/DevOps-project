@@ -18,7 +18,7 @@ app.get('/api/services', (req, res) => {
             { name: "Auth Service", url: "http://localhost:5001" },
             { name: "API Service", url: "http://localhost:5002" }
         ]
-    });
+    }).status(200);
 });
 
 // New Endpoint for Fetching News
