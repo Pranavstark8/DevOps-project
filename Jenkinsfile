@@ -53,7 +53,7 @@ pipeline {
                 script {
                     sh '''
                     echo "Running tests..."
-                    curl http://localhost:3000 | jq  { echo "Tests failed!"; exit 1; }
+                    curl http://localhost:6000 | jq  { echo "Tests failed!"; exit 1; }
                     '''
                 }
             }
