@@ -2,112 +2,45 @@ pipeline {
     agent any
 
     environment {
-        NODE_VERSION = "16"  // Specify the Node.js version
-        REPO_URL = "https://github.com/Pranavstark8/DevOps-project.git"  // Replace with your repository URL
+        // Set the path to your Docker Compose file
+        COMPOSE_FILE = 'docker-compose.yml'
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
+            steps {
+                // Checkout the code from the repository
+                git 'https://github.com/Pranavstark8/DevOps-project.git'
+            }
+        }
+        
+        stage('Build and Deploy') {
             steps {
                 script {
-                    echo "Cloning repository from ${REPO_URL}..."
-                    // Clone the GitHub repository
-                    git url: REPO_URL, branch: 'main'
-                    echo "Repository cloned successfully."
+                    // Ensure Docker and Docker Compose are available on the agent
+                    sh 'docker --version'
+                    sh 'docker-compose --version'
+                    
+                    // Build and run the services using Docker Compose
+                    sh '''
+                    docker-compose -f $COMPOSE_FILE up --build -d
+                    '''
                 }
             }
         }
 
-        stage('Install Node.js') {
+        stage('Test') {
             steps {
-                script {
-                    echo "Installing Node.js version ${NODE_VERSION}..."
-                    // Installing Node.js
-                    sh '''
-                    sudo curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
-                    sudo apt-get install -y nodejs
-                    '''
-                    echo "Node.js ${NODE_VERSION} installation complete."
-                }
+                // You can add additional testing steps here
+                echo "Run your tests here, if any"
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Teardown') {
             steps {
                 script {
-                    echo "Installing dependencies for auth service..."
-                    // Install dependencies for auth service
-                    sh '''
-                    cd auth
-                    npm install
-                    '''
-                    echo "Auth service dependencies installed."
-
-                    echo "Installing dependencies for API service..."
-                    // Install dependencies for API service
-                    sh '''
-                    cd ../api
-                    npm install
-                    '''
-                    echo "API service dependencies installed."
-                }
-            }
-        }
-
-        stage('Run Unit Tests') {
-            steps {
-                script {
-                    echo "Running unit tests for auth service..."
-                    // Run tests for auth service
-                    sh '''
-                    cd auth
-                    npm test
-                    '''
-                    echo "Auth service tests completed."
-
-                    echo "Running unit tests for API service..."
-                    // Run tests for API service
-                    sh '''
-                    cd ../api
-                    npm test
-                    '''
-                    echo "API service tests completed."
-                }
-            }
-        }
-
-        stage('Pull Docker Images') {
-            steps {
-                script {
-                    echo "Pulling Docker images..."
-                    // Pull Docker base images
-                    sh '''
-                    docker pull node:${NODE_VERSION}
-                    docker pull pranav/api:latest
-                    docker pull pranav/auth:latest
-                    docker pull pranav/frontend:latest
-                    '''
-                    echo "Docker images pulled successfully."
-                }
-            }
-        }
-
-        stage('Build and Run Services with Docker Compose') {
-            steps {
-                script {
-                    echo "Stopping any existing services..."
-                    // Stop any existing services
-                    sh 'docker-compose down'
-
-                    echo "Building Docker images..."
-                    // Build Docker images
-                    sh 'docker-compose build'
-
-                    echo "Starting services in detached mode..."
-                    // Start services in detached mode
-                    sh 'docker-compose up -d'
-
-                    echo "Docker Compose services are up and running."
+                    // Bring down the services after testing/deployment
+                    sh 'docker-compose -f $COMPOSE_FILE down'
                 }
             }
         }
@@ -115,13 +48,14 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline execution completed."
+            // Clean up any resources or logs if needed
+            echo 'Cleaning up resources after build'
         }
         success {
-            echo "Pipeline executed successfully."
+            echo 'Pipeline executed successfully!'
         }
         failure {
-            echo "Pipeline failed. Please check the logs for details."
+            echo 'Pipeline failed!'
         }
     }
 }
