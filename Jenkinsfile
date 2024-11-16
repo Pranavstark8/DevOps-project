@@ -88,7 +88,9 @@ pipeline {
                 script {
                     sh '''
                         echo "Running tests..."
-
+                        export NVM_DIR="$HOME/.nvm"
+                        . "$NVM_DIR/nvm.sh"
+                        nvm use $NODE_VERSION
                         npm install # Install dependencies
                         cd auth
                         npm test
