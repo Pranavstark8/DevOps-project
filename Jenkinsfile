@@ -12,7 +12,6 @@ pipeline {
                         echo "jq not found. Installing locally..."
                         curl -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
                         chmod +x jq
-                        mv jq /usr/local/bin
                         echo "jq installed successfully."
                     fi
 
@@ -20,8 +19,7 @@ pipeline {
                     echo "Verifying tools..."
                     docker version
                     docker info
-                    docker compose version  
-                    docker-compose --version
+                    docker compose --version
                     curl --version
                     ./jq --version
                     '''
