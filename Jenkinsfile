@@ -10,8 +10,10 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
+                    echo "Cloning repository from ${REPO_URL}..."
                     // Clone the GitHub repository
                     git url: REPO_URL, branch: 'main'
+                    echo "Repository cloned successfully."
                 }
             }
         }
@@ -19,11 +21,13 @@ pipeline {
         stage('Install Node.js') {
             steps {
                 script {
+                    echo "Installing Node.js version ${NODE_VERSION}..."
                     // Installing Node.js
                     sh '''
                     curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
                     apt-get install -y nodejs
                     '''
+                    echo "Node.js ${NODE_VERSION} installation complete."
                 }
             }
         }
@@ -31,13 +35,21 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Install dependencies for both backend services
+                    echo "Installing dependencies for auth service..."
+                    // Install dependencies for auth service
                     sh '''
                     cd auth
                     npm install
+                    '''
+                    echo "Auth service dependencies installed."
+
+                    echo "Installing dependencies for API service..."
+                    // Install dependencies for API service
+                    sh '''
                     cd ../api
                     npm install
                     '''
+                    echo "API service dependencies installed."
                 }
             }
         }
@@ -45,13 +57,21 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 script {
-                    // Run tests for both auth and API services
+                    echo "Running unit tests for auth service..."
+                    // Run tests for auth service
                     sh '''
                     cd auth
                     npm test
+                    '''
+                    echo "Auth service tests completed."
+
+                    echo "Running unit tests for API service..."
+                    // Run tests for API service
+                    sh '''
                     cd ../api
                     npm test
                     '''
+                    echo "API service tests completed."
                 }
             }
         }
@@ -59,11 +79,15 @@ pipeline {
         stage('Pull Docker Images') {
             steps {
                 script {
+                    echo "Pulling Docker images..."
                     // Pull Docker base images
                     sh '''
                     docker pull node:${NODE_VERSION}
-                    docker pull mongo:5
+                    docker pull pranav/api:latest
+                    docker pull pranav/auth:latest
+                    docker pull pranav/frontend:latest
                     '''
+                    echo "Docker images pulled successfully."
                 }
             }
         }
@@ -71,12 +95,19 @@ pipeline {
         stage('Build and Run Services with Docker Compose') {
             steps {
                 script {
-                    // Use Docker Compose to build and run services from docker-compose.yml
-                    sh '''
-                    docker-compose down      # Stop any existing services
-                    docker-compose build     # Build Docker images
-                    docker-compose up -d     # Start services in detached mode
-                    '''
+                    echo "Stopping any existing services..."
+                    // Stop any existing services
+                    sh 'docker-compose down'
+
+                    echo "Building Docker images..."
+                    // Build Docker images
+                    sh 'docker-compose build'
+
+                    echo "Starting services in detached mode..."
+                    // Start services in detached mode
+                    sh 'docker-compose up -d'
+
+                    echo "Docker Compose services are up and running."
                 }
             }
         }
