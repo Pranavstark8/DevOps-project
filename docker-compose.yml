@@ -16,4 +16,4 @@ services:
   api:
     image: stark07/api:latest  # Replace with your Docker Hub image name and tag
     ports:
-      - "5002:5002"
+      - "9000:5002"
