@@ -1,54 +1,39 @@
 pipeline {
     agent any
 
-    environment {
-        // Set the path to your Docker Compose file
-        COMPOSE_FILE = 'docker-compose.yml'
-    }
-
     stages {
-        stage('Checkout') {
-            steps {
-                // Checkout the code from the repository
-                git 'https://github.com/Pranavstark8/DevOps-project.git'
+        stage('Veryfying tools'){
+            steps{
+                sh '''
+                    docker version
+                    docker info
+                    docker compose version
+                    curl --version
+                    jq --version
+                '''
+            }
+        }
+        stage('Prune Docker Data'){
+            steps{
+                sh 'docker system prune -a --volumes -f'
+            }
+        }
+        stage('Start Container'){
+            steps{
+                sh 'docker compose up -d --no-color --wait'
+                sh 'docker compose ps'
+            }
+        }
+        stage('Run tests'){
+            steps{
+                steps{
+                    sh 'curl http://localhost:3000 | jq'
+                }
             }
         }
         
-        stage('Build and Deploy') {
-            steps {
-                script {
-                    // Ensure Docker and Docker Compose are available on the agent
-                    sh 'docker --version'
-                    sh 'docker-compose --version'
-                    
-                    // Build and run the services using Docker Compose
-                    sh '''
-                    docker-compose -f $COMPOSE_FILE up --build -d
-                    '''
-                }
-            }
-        }
-
-        stage('Test') {
-            steps {
-                // You can add additional testing steps here
-                echo "Run your tests here, if any"
-            }
-        }
-
-        stage('Teardown') {
-            steps {
-                script {
-                    // Bring down the services after testing/deployment
-                    sh 'docker-compose -f $COMPOSE_FILE down'
-                }
-            }
-        }
-    }
-
     post {
         always {
-            // Clean up any resources or logs if needed
             echo 'Cleaning up resources after build'
         }
         success {
@@ -57,5 +42,6 @@ pipeline {
         failure {
             echo 'Pipeline failed!'
         }
+    }
     }
 }
