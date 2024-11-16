@@ -1,4 +1,3 @@
-Manindhra Kama Pisaachi, [16-11-2024 16:04]
 pipeline {
     agent any
 
