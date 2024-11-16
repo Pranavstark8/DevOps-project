@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         NODE_VERSION = "16"  // Specify the Node.js version
-        REPO_URL = "https://github.com/pranav07/my-docker-repo.git"  // Replace with your repository URL
+        REPO_URL = "https://github.com/Pranavstark8/DevOps-project.git"  // Replace with your repository URL
     }
 
     stages {
@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     // Clone the GitHub repository
-                    git url: "$REPO_URL", branch: 'main'  // Assuming you want to clone the 'main' branch
+                    git url: REPO_URL, branch: 'main'
                 }
             }
         }
@@ -28,13 +28,41 @@ pipeline {
             }
         }
 
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    // Install dependencies for both backend services
+                    sh '''
+                    cd auth
+                    npm install
+                    cd ../api
+                    npm install
+                    '''
+                }
+            }
+        }
+
+        stage('Run Unit Tests') {
+            steps {
+                script {
+                    // Run tests for both auth and API services
+                    sh '''
+                    cd auth
+                    npm test
+                    cd ../api
+                    npm test
+                    '''
+                }
+            }
+        }
+
         stage('Pull Docker Images') {
             steps {
                 script {
-                    // Example of pulling Docker images after cloning the repository
+                    // Pull Docker base images
                     sh '''
-                    docker pull node:16        # Pull the official Node.js image
-                    docker pull pranav07/api:1.0  # Replace with your Docker Hub image
+                    docker pull node:${NODE_VERSION}
+                    docker pull mongo:5
                     '''
                 }
             }
@@ -57,6 +85,12 @@ pipeline {
     post {
         always {
             echo "Pipeline execution completed."
+        }
+        success {
+            echo "Pipeline executed successfully."
+        }
+        failure {
+            echo "Pipeline failed. Please check the logs for details."
         }
     }
 }

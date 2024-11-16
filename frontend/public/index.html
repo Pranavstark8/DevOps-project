@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <h1>Welcome to the Microservices Application</h1>
+    <h1>Welcome to the Latest News</h1>
 
     <div id="login">
         <h2>Login</h2>
@@ -20,8 +20,11 @@
     </div>
 
     <div id="content" style="display: none;">
-        <h2>Available Services</h2>
-        <div id="services"></div>
+        <h2>Top News</h2>
+        <div id="news-container">
+            <!-- News articles will be dynamically inserted here -->
+        </div>
+        <div id="error" class="hidden">Unable to fetch news. Please try again later.</div>
     </div>
 
     <script src="script.js"></script>
