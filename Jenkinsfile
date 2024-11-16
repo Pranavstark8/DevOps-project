@@ -1,6 +1,9 @@
 pipeline {
     agent any
-
+     environment {
+        API_SERVICE_URL = 'http://localhost:5002'
+        AUTH_SERVICE_URL = 'http://localhost:5001'
+    }
     stages {
         stage('Verify Tools') {
             steps {
@@ -52,9 +55,23 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    echo "Running tests..."
-                    curl http://localhost:6000 | jq  { echo "Tests failed!"; exit 1; }
+                        echo "Running tests..."
+                        npm install # Install dependencies
+                        cd auth
+                        npm test
+                        cd ..
+                        cd api
+                        npm test
                     '''
+            }
+        }
+    }
+
+        stage('Stop Services') {
+            steps {
+                script {
+                    echo 'Stopping services...'
+                    sh 'docker-compose down' // Clean up after the tests
                 }
             }
         }
