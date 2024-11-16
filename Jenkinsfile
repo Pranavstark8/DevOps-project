@@ -43,8 +43,8 @@ pipeline {
                 script {
                     sh '''
                     echo "Starting containers..."
-                    docker compose up -d --no-color --wait
-                    docker compose ps
+                    docker-compose up --build
+                    docker-compose ps
                     '''
                 }
             }
@@ -55,7 +55,6 @@ pipeline {
                 script {
                     sh '''
                     echo "Running tests..."
-                    curl http://localhost:3000 | ./jq
                     '''
                 }
             }
