@@ -3,7 +3,7 @@ services:
   frontend:
     image: stark07/frontend:latest  # Replace with your Docker Hub image name and tag
     ports:
-      - "3000:3000"
+      - "6000:3000"
     depends_on:
       - auth
       - api
