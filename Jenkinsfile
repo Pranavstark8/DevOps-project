@@ -24,8 +24,8 @@ pipeline {
                     echo "Installing Node.js version ${NODE_VERSION}..."
                     // Installing Node.js
                     sh '''
-                    curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
-                    apt-get install -y nodejs
+                    sudo curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
+                    sudo apt-get install -y nodejs
                     '''
                     echo "Node.js ${NODE_VERSION} installation complete."
                 }
