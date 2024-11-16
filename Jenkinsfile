@@ -42,17 +42,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    echo "Starting containers..."
-                    
-                    # Check if 'docker compose' is available
-                    if command -v docker compose &> /dev/null; then
-                        docker compose up --detach --no-color
-                        docker compose ps
-                    else
-                        # Use legacy docker-compose if available
-                        docker-compose up -d --no-color
-                        docker-compose ps
-                    fi
+                        docker-compose up -d
                     '''
                 }
             }
