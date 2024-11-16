@@ -23,7 +23,7 @@ app.use(express.json());
 
 // Register and login routes
 app.post('/auth/register', async (req, res) => { /* registration code */ });
-app.post('/auth/login', async (req, res) => { res.json({ success: true }) });
+app.post('/auth/login', async (req, res) => { res.json({ success: true }).status(200) });
 
 app.listen(PORT, () => {
     console.log(`Auth service running on http://localhost:${PORT}`);
