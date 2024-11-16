@@ -43,8 +43,8 @@ pipeline {
                 script {
                     sh '''
                     echo "Starting containers..."
-                    docker-compose up --build
-                    docker-compose ps
+                    docker compose up -d --no-color --wait
+                    docker compose ps
                     '''
                 }
             }
