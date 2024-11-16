@@ -2,32 +2,62 @@ pipeline {
     agent any
 
     stages {
-        stage('Veryfying tools') {
+        stage('Verify Tools') {
             steps {
-                sh '''
+                script {
+                    sh '''
+                    # Check and install jq if not available
+                    if ! command -v jq &> /dev/null
+                    then
+                        echo "jq not found. Installing locally..."
+                        curl -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+                        chmod +x jq
+                        echo "jq installed successfully."
+                    fi
+
+                    # Verify tools
+                    echo "Verifying tools..."
                     docker version
                     docker info
                     docker compose --version
-                '''
+                    curl --version
+                    ./jq --version
+                    '''
+                }
             }
         }
-        
+
         stage('Prune Docker Data') {
             steps {
-                sh 'docker system prune -a --volumes -f'
+                script {
+                    sh '''
+                    echo "Pruning unused Docker resources..."
+                    docker system prune -a --volumes -f
+                    '''
+                }
             }
         }
 
         stage('Start Container') {
             steps {
-                sh 'docker compose up -d --no-color --wait'
-                sh 'docker compose ps'
+                script {
+                    sh '''
+                    echo "Starting containers..."
+                    docker compose up -d --no-color --wait
+                    docker compose ps
+                    '''
+                }
             }
         }
 
-        stage('Run tests') {
+        stage('Run Tests') {
             steps {
-                // sh 'curl http://localhost:3000 | jq'
+                script {
+                    sh '''
+                    echo "Running tests..."
+                    curl http://localhost:3000 | ./jq
+                    '''
+                }
             }
         }
     }
@@ -35,6 +65,10 @@ pipeline {
     post {
         always {
             echo 'Cleaning up resources after build'
+            sh '''
+            echo "Stopping and removing containers..."
+            docker compose down
+            '''
         }
         success {
             echo 'Pipeline executed successfully!'
